@@ -296,7 +296,7 @@ Test01
     # Do not start SMTP server because no email is sent for this test
     Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/*.png
     # Delete the links between the user accounts and the studies with this batch file
-    Run    C:\\Users\\albert\\Desktop\\DELETE\\zBATCHzFILES\\DeleteLink.bat
+    # Run    C:\\Users\\albert\\Desktop\\DELETE\\zBATCHzFILES\\DeleteLink.bat
 
 
 Test02
