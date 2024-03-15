@@ -12,7 +12,7 @@ Library    BuiltIn
 *** Variables ***
 
 ${MyHostname}    demo5757
-${MyRepositoryName}    TMPWEBV497TC3855
+${MyRepositoryName}    TMPWEBV497TC3856
 # You must create the folder "MyFolderWorkspace" manually in the computer of Jenkins master, in case you test the script with the computer of Jenkins master
 ${MyFolderWorkspace}    C:/000/jenkins/workspace
 ${MyDirectoryDownload}    C:\\temp\\zDownload
@@ -21,6 +21,10 @@ ${base_url_smtp_server}    http://localhost:8070
 ${MyPatient1FamilyName}    AZ127431
 ${MyPatient1FirstName}    ALBERT
 ${MyPatient1SeriesDescription}    CTOP127431
+${MyPatient1BirthdateYYYY}    1945
+${MyPatient1BirthdateMM}    11
+${MyPatient1BirthdateDD}    27
+${MyPatient1AccessionNumber}    CTEF127431
 
 ${MyPatient2FamilyName}    AZ138542
 ${MyPatient2FirstName}    ALBERT
@@ -29,6 +33,22 @@ ${MyPatient2BirthdateYYYY}    1956
 ${MyPatient2BirthdateMM}    12
 ${MyPatient2BirthdateDD}    28
 ${MyPatient2AccessionNumber}    CTEF138542
+
+${MyPatient3FamilyName}    AZ250764
+${MyPatient3FirstName}    BERNARD
+${MyPatient3SeriesDescription}    CTOP250764
+${MyPatient3BirthdateYYYY}    1958
+${MyPatient3BirthdateMM}    11
+${MyPatient3BirthdateDD}    30
+${MyPatient3AccessionNumber}    CTEF250764
+
+${MyPatient4FamilyName}    AZ149653
+${MyPatient4FirstName}    ALBERT
+${MyPatient4SeriesDescription}    CTOP149653
+${MyPatient4BirthdateYYYY}    1967
+${MyPatient4BirthdateMM}    10
+${MyPatient4BirthdateDD}    29
+${MyPatient4AccessionNumber}    CTEF149653
 
 ${MyPortNumber}    10000
 #  Do not use the brackets to define the variable of bearer token
@@ -52,6 +72,10 @@ ${TmpWebUser2Email}    albert@hospital8.com
 ${TmpWebUser3Login}    mary
 ${TmpWebUser3Password}    Videogames2024
 ${TmpWebUser3Email}    mary@hospital8.com
+
+${TmpWebUser4Login}    thomas
+${TmpWebUser4Password}    Videogames2024
+${TmpWebUser4Email}    thomas@hospital8.com
 
 # NOT USEFUL ${MyFolderResults}    results
 ${MyLogFile}    MyLogFile.log
@@ -83,7 +107,7 @@ ${VersionSiteManager}    4.1.2-228
 
 Remove The Previous Results
     [Documentation]    Delete the previous results and log files
-    # Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/geckodriver*
+    Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/geckodriver*
     # Delete the previous screenshots
     Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/*.png
     Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/${MyLogFile}
@@ -239,8 +263,9 @@ My User Opens Internet Browser And Connects To My TMP Web
     Wait Until Element Is Visible    id=username    timeout=15s
     Wait Until Element Is Visible    id=password    timeout=15s
     Input Text    id=username    ${MyUserLogin}    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=username    ${MyUserLogin}
     Input Text    id=password    ${MyUserPassword}    clear=True
-    Sleep    2s
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=password    ${MyUserPassword}
     Click Button    id=kc-login
     Wait Until Page Contains    Telemis Media Publisher Web    timeout=15s
     Sleep    3s
@@ -268,9 +293,10 @@ Delete All My Email Messages In SMTP Server
 Test01
     [Documentation]    Reset the test results
     [Tags]    CRITICALITY LOW
-    # Do not start SMTP server because no email is sent if user account has been created by the administrator
+    # Do not start SMTP server because no email is sent for this test
     Remove Files    ${MyFolderWorkspace}/${MyRepositoryName}/results/*.png
-    Sleep    3s
+    # Delete the links between the user accounts and the studies with this batch file
+    Run    C:\\Users\\albert\\Desktop\\DELETE\\zBATCHzFILES\\DeleteLink.bat
 
 
 Test02
@@ -284,242 +310,170 @@ Test03
     [Tags]    CRITICALITY LOW
     Wait Until Element Is Visible    id=languageSelect    timeout=15s
     Select From List By Label    id=languageSelect    English
-    Sleep    2s
     Wait Until Element Is Visible    id=searchInput    timeout=15s
     Click Element    id=searchInput
 
 
 Test04
-    [Documentation]    Select and open the table "Manage users"
+    [Documentation]    Open the table "Studies"
     [Tags]    CRITICALITY NORMAL
     Wait Until Page Contains    Admin    timeout=15s
+    Wait Until Element Is Visible    link=Admin    timeout=15s
     Click Link    link=Admin
-    Sleep    3s
-    Wait Until Page Contains    Manage users    timeout=15s
-    Click Link    link=Manage users
-    Wait Until Page Contains    telemis_webadmin    timeout=15s
-    Page Should Contain Link    link=telemis_webadmin    None    TRACE
-    Wait Until Element Is Visible    link=Create new user    timeout=15s
-    Element Should Be Visible    link=Create new user
-    Click Element    link=Create new user
-    Take My Screenshot
+    Wait Until Page Contains    Assign studies    timeout=15s
+    Wait Until Element Is Visible    link=Assign studies    timeout=15s
+    Click Link    link=Assign studies
 
 
 Test05
-    [Documentation]    Click the button "Create new user"
-    [Tags]    CRITICALITY HIGH
-    Log    After clicking the button Create new user, Internet browser opens the page Create an account
-    Wait Until Page Contains    Create an account    timeout=19s
+    [Documentation]    Find and select the first study
+    [Tags]    CRITICALITY NORMAL
+    Wait Until Page Contains    Studies    timeout=15s
+    Wait Until Element Is Visible    id=searchedValue    timeout=15s
+    Input Text    id=searchedValue     BC250764    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=searchedValue     BC250764
+    Press Keys    id=searchedValue    ENTER
+    # Please not check that this study exists because TMP Tool Web is probably still processing the study (do not use "Wait Until Page Contains ...")
 
 
 Test06
-    [Documentation]    Fill out the form
+    [Documentation]    Click the button "Delete" to remove the study from the server
     [Tags]    CRITICALITY HIGH
-    Wait Until Element Is Visible    id=userlogin    timeout=15s
-    Wait Until Page Contains    Login    timeout=15s
-    Input Text    id=userlogin    ${TmpWebUser3Login}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=userlogin    ${TmpWebUser3Login}
-
-    Wait Until Element Is Visible    id=firstname    timeout=15s
-    Wait Until Page Contains    First Name    timeout=15s
-    Input Text    id=firstname    Mary    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=firstname    Mary
-
-    Wait Until Element Is Visible    id=lastname    timeout=15s
-    Wait Until Page Contains    Last Name    timeout=15s
-    Input Text    id=lastname    Morton    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=lastname    Morton
-
-    Wait Until Element Is Visible    id=password    timeout=15s
-    Wait Until Page Contains    Password    timeout=15s
-    Input Text    id=password    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=password    ${TmpWebUser3Password}
-
-    Wait Until Element Is Visible    id=passwordConfirm    timeout=15s
-    Wait Until Page Contains    Enter your password again    timeout=15s
-    Input Text    id=passwordConfirm    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=passwordConfirm    ${TmpWebUser3Password}
-
-    Wait Until Element Is Visible    id=email    timeout=15s
-    Wait Until Page Contains    Email Address    timeout=15s
-    Input Text    id=email    ${TmpWebUser3Email}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=email    ${TmpWebUser3Email}
-
-    Click element    id=login-register
-    Press Keys    None    PAGE_DOWN
-    Sleep    2s
-
-    Wait Until Element Is Visible    id=phone    timeout=15s
-    Wait Until Page Contains    Phone number    timeout=15s
-    Input Text    id=phone    030123456    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=phone    030123456
-
-    Wait Until Element Is Visible    id=pro.phone    timeout=15s
-    Wait Until Page Contains    Professionnal Phone number    timeout=15s
-    Input Text    id=pro.phone    030456789    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=pro.phone    030456789
-
-    Wait Until Element Is Visible    id=mob.phone    timeout=15s
-    Wait Until Page Contains    Mobile Phone number    timeout=15s
-    Input Text    id=mob.phone    0478123456    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=mob.phone    0478123456
-
-    Wait Until Element Is Visible    id=address    timeout=15s
-    Wait Until Page Contains    Address    timeout=15s
-    Input Text    id=address    5 rue Mimosa 5000 Namur    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=address    5 rue Mimosa 5000 Namur
-
-    Wait Until Element Is Visible    id=med-number    timeout=15s
-    Wait Until Page Contains    Medical number    timeout=15s
-    Input Text    id=med-number    12341001    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=med-number    12341001
-
-    Wait Until Page Contains    Send notification for new study    timeout=15s
-    Wait Until Element Is Visible    id=wantsNotification    timeout=15s
-    Select Checkbox    id=wantsNotification
-    Sleep    1s
+    ${ContentsOfTable} =    Get Text  id=command
+    Log    ${ContentsOfTable}
+    Take My Screenshot
+    # ${StudyExists} =    Should Contain    ${ContentsOfTable}    BC250764
+    # Log    ${StudyExists}
+    # Locator of the link "Delete": xpath=(//a[contains(text(),'Delete')])[2] OR css=tbody a
+    Run Keyword If    'BC250764' in '''${ContentsOfTable}'''    Wait Until Element Is Visible    xpath=(//a[contains(text(),'Delete')])[2]    timeout=15s
+    Run Keyword If    'BC250764' in '''${ContentsOfTable}'''    Click Element    xpath=(//a[contains(text(),'Delete')])[2]
+    Run Keyword If    'BC250764' in '''${ContentsOfTable}'''    Handle Alert    action=ACCEPT    timeout=15s
+    Copy File    C:/000/jenkins/dicom/CT250764.dcm    ${MyDicomPath}
+    Sleep    4s
+    Element Should Be Visible    link=My Patients
+    Click Link    link=My Patients
+    Wait Until Page Contains   Birth Date    timeout=15s
+    Take My Screenshot
 
 
 Test07
-    [Documentation]    Enter a pre-existing medical number and check that the page shows the warning message "Medical number already exists"
-    [Tags]    CRITICALITY HIGH
-    Click Button    name=submit
-    Sleep    2s
-    Click element    id=login-register
-    Press Keys    None    PAGE_DOWN
-    Wait Until Page Contains    Medical number already exists    timeout=15s
-    Take My Screenshot
+    [Documentation]    Find and select the second study
+    [Tags]    CRITICALITY NORMAL
+    Wait Until Element Is Visible    link=Admin    timeout=15s
+    Click Link    link=Admin
+    Wait Until Page Contains    Assign studies    timeout=15s
+    Wait Until Element Is Visible    link=Assign studies    timeout=15s
+    Click Link    link=Assign studies
+    Wait Until Page Contains    Studies    timeout=15s
+    Wait Until Element Is Visible    id=searchedValue    timeout=15s
+    Input Text    id=searchedValue     BC149653    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=searchedValue     BC149653
+    Press Keys    id=searchedValue    ENTER
+    Wait Until Page Contains    ${MyPatient4FamilyName}^${MyPatient4FirstName}    timeout=15s
 
 
 Test08
-    [Documentation]    Leave the field "Medical number" empty and check that the page shows the warning message "Required field"
+    [Documentation]    Administrator assigns the study to the doctor's name
     [Tags]    CRITICALITY HIGH
-    Wait Until Element Is Visible    id=password    timeout=15s
-    Wait Until Page Contains    Password    timeout=15s
-    Input Text    id=password    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=password    ${TmpWebUser3Password}
-
-    Wait Until Element Is Visible    id=passwordConfirm    timeout=15s
-    Wait Until Page Contains    Enter your password again    timeout=15s
-    Input Text    id=passwordConfirm    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=passwordConfirm    ${TmpWebUser3Password}
-
-    Click element    id=login-register
-    Press Keys    None    PAGE_DOWN
-    Sleep    2s
-
-    Clear element Text    id=med-number
-    Sleep    1s
-    ${MyValue} =    Get Text    id=med-number
-    Should Be Empty    ${MyValue}
-
-    Click Button    name=submit
-    Sleep    2s
-    Click element    id=login-register
-    Press Keys    None    PAGE_DOWN
-    Wait Until Page Contains    Required field    timeout=15s
+    Wait Until Element Is Visible    id=displayedStudies0.isSelected1    timeout=15s
+    Element Should Be Visible    id=displayedStudies0.isSelected1
+    Click Element    id=displayedStudies0.isSelected1
     Take My Screenshot
+    Wait Until Element Is Visible    id=txtSearch    timeout=15s
+    Element Should Be Visible    id=txtSearch
+    Input Text    id=txtSearch     Taylor ^ Thomas ^ (thomas)    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=txtSearch     Taylor ^ Thomas ^ (thomas)
+    Press Keys    id=txtSearch    ENTER
+    Wait Until Element Is Visible    name=assign    timeout=15s
+    Element Should Be Visible    name=assign
+    # Do not click the button "Assign" because the list of doctor names hides the button, please press ENTER key after selecting the doctor name from the list
+    # Click Button    name=assign
+    Sleep    3s
 
 
 Test09
-    [Documentation]    Enter the valid medical number and then click the button "Submit"
-    [Tags]    CRITICALITY HIGH
-    Wait Until Element Is Visible    id=password    timeout=15s
-    Wait Until Page Contains    Password    timeout=15s
-    Input Text    id=password    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=password    ${TmpWebUser3Password}
-
-    Wait Until Element Is Visible    id=passwordConfirm    timeout=15s
-    Wait Until Page Contains    Enter your password again    timeout=15s
-    Input Text    id=passwordConfirm    ${TmpWebUser3Password}    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=passwordConfirm    ${TmpWebUser3Password}
-
-    Click element    id=login-register
-    Press Keys    None    PAGE_DOWN
-    Sleep    2s
-
-    Wait Until Element Is Visible    id=med-number    timeout=15s
-    Wait Until Page Contains    Medical number    timeout=15s
-    Input Text    id=med-number    12341003    clear=True
-    Sleep    1s
-    Textfield Value Should Be    id=med-number    12341003
-
-    Click Button    name=submit
-    Take My Screenshot
-    Wait Until Page Contains    Manage users    timeout=15s
-    Click Link    link=Manage users
-    Wait Until Page Contains    ${TmpWebUser3Login}    timeout=15s
-    Page Should Contain Link    link=${TmpWebUser3Login}    None    TRACE
-    Click Link    link=${TmpWebUser3Login}
-    Wait Until Page Contains    Personal details    timeout=15s
-    Sleep    1s
-    Take My Screenshot
-    Log Out My User Session Of TMP Web
-    Close Browser
+    [Documentation]    Administrator opens the second study
+    [Tags]    CRITICALITY NORMAL
+    Element Should Be Visible    link=My Patients
+    Click Link    link=My Patients
+    Wait Until Page Contains   Birth Date    timeout=15s
+    Wait Until Element Is Visible    id=searchInput    timeout=15s
+    Element Should Be Visible    id=searchInput
+    Input Text    id=searchInput    ${MyPatient4FamilyName}    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=searchInput    ${MyPatient4FamilyName}
+    Press Keys    id=searchInput    ENTER
+    Wait Until Page Contains    ${MyPatient4FamilyName} ${MyPatient4FirstName}    timeout=15s
+    Click Link    link=${MyPatient4FamilyName} ${MyPatient4FirstName}
 
 
 Test10
-    [Documentation]    The limited user account connects to the website for the very first time
-    [Tags]    CRITICALITY NORMAL
-    My User Opens Internet Browser And Connects To My TMP Web    ${TmpWebUser3Login}    ${TmpWebUser3Password}
-
-
-Test11
-    [Documentation]    The limited user account accesses the website of TMP Web
-    [Tags]    CRITICALITY NORMAL
-    Wait Until Page Contains    Settings    timeout=15s
-    Page Should Contain Link    link=Settings    None    TRACE
-    Click Link    link=Settings
-    Sleep    3s
-    Wait Until Page Contains    Personal details    timeout=15s
-    Sleep    2s
+    [Documentation]    Administrator checks that the study has been assigned properly to the doctor's name
+    [Tags]    CRITICALITY HIGH
+    Wait Until Page Contains    ${MyPatient4BirthdateDD}-${MyPatient4BirthdateMM}-${MyPatient4BirthdateYYYY}    timeout=15s
+    Wait Until Page Contains    Download the following study    timeout=15s
+    Wait Until Element Is Visible    link=DCM    timeout=15s
+    Wait Until Element Is Visible    link=JPG    timeout=15s
+    Wait Until Element Is Visible    link=${MyPatient4SeriesDescription}    timeout=15s
+    Wait Until Page Contains    Anonymous link:    timeout=15s
+    Wait Until Page Contains    Ordering physician:    timeout=15s
+    Wait Until Page Contains    Users allowed to view this study:    timeout=15s
+    Wait Until Page Contains    Thomas Taylor ( thomas )    timeout=15s
     Take My Screenshot
     Log Out My User Session Of TMP Web
     Close Browser
 
 
-Test12
-    [Documentation]    Administrator deletes the user account
+Test11
+    [Documentation]    The limited user account connects to the website of TMP Web
     [Tags]    CRITICALITY NORMAL
-    My User Opens Internet Browser And Connects To My TMP Web    ${TmpWebAdministratorLogin}    ${TmpWebAdministratorPassword}
-    Wait Until Page Contains    Admin    timeout=15s
-    Click Link    link=Admin
-    Sleep    3s
-    Wait Until Page Contains    Manage users    timeout=15s
-    Click Link    link=Manage users
-    Sleep    3s
-    Page Should Contain Link    link=${TmpWebUser3Login}    None    TRACE
-    Click Link    link=${TmpWebUser3Login}
-    Wait Until Page Contains    Personal details    timeout=15s
-    Wait Until Page Contains    Delete user    timeout=15s
-    Sleep    4s
-    Click Element    link=Delete user
-    # Do NOT use both keyword (Handle Alert) and (Alert Should Be Present) together because the keyword (Alert Should Be Present) accepts the message automatically
-    ${message} =    Handle Alert    action=ACCEPT    timeout=15s
-    Sleep    3s
-    Take My Screenshot
-    # Synchronize two servers (TMP Web and Keycloak) to make sure that the user account does not exist anymore for the next tests
-    Go To    https://${MyHostname}.telemiscloud.com/tmpweb/keycloak_synchro.app
-    Sleep    2s
-    Log Out My User Session Of TMP Web
+    My User Opens Internet Browser And Connects To My TMP Web    ${TmpWebUser4Login}    ${TmpWebUser4Password}
+
+
+Test12
+    [Documentation]    The limited user account searchs the study
+    [Tags]    CRITICALITY NORMAL
+    Wait Until Page Contains   My Patients    timeout=15s
+    Element Should Be Visible    link=My Patients
+    Click Link    link=My Patients
+    Wait Until Page Contains   Birth Date    timeout=15s
+    Wait Until Element Is Visible    id=searchInput    timeout=15s
+    Element Should Be Visible    id=searchInput
+    Input Text    id=searchInput    ${MyPatient4FamilyName}    clear=True
+    Wait Until Keyword Succeeds    15s    3s    Textfield Value Should Be    id=searchInput    ${MyPatient4FamilyName}
+    Press Keys    id=searchInput    ENTER
+    Wait Until Page Contains    ${MyPatient4FamilyName} ${MyPatient4FirstName}    timeout=15s
+    Click Link    link=${MyPatient4FamilyName} ${MyPatient4FirstName}
 
 
 Test13
+    [Documentation]    Check that the second study has been assigned to the limited user account
+    [Tags]    CRITICALITY HIGH
+    Wait Until Page Contains    ${MyPatient4BirthdateDD}-${MyPatient4BirthdateMM}-${MyPatient4BirthdateYYYY}    timeout=15s
+    Wait Until Page Contains    Download the following study    timeout=15s
+    Wait Until Element Is Visible    link=DCM    timeout=15s
+    Wait Until Element Is Visible    link=JPG    timeout=15s
+    Wait Until Element Is Visible    link=${MyPatient4SeriesDescription}    timeout=15s
+    Wait Until Page Contains    Anonymous link:    timeout=15s
+    Wait Until Page Contains    Ordering physician:    timeout=15s
+    Take My Screenshot
+
+
+Test14
+    [Documentation]    Open the series with the image viewer
+    [Tags]    CRITICALITY NORMAL
+    Element Should Be Visible    link=${MyPatient4SeriesDescription}
+    Click Link    link=${MyPatient4SeriesDescription}
+    Wait Until Page Contains    Non-diagnostic quality    timeout=19s
+    Wait Until Element Is Visible    link=Full screen    timeout=15s
+    Wait Until Page Contains    ${MyPatient4FamilyName} ${MyPatient4FirstName}    timeout=15s
+    Wait Until Element Is Visible    link=DICOM download    timeout=15s
+    Wait Until Element Is Visible    link=JPEG download    timeout=15s
+    Sleep    4s
+    Take My Screenshot
+    Log Out My User Session Of TMP Web
+
+
+Test15
     [Documentation]    Shut down the browser and reset the cache
     [Tags]    CRITICALITY LOW
     Close All Browsers
